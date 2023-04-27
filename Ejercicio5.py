@@ -1,18 +1,25 @@
+# Desarrollar un algoritmo que permita cargar 1000 número enteros –generados de manera alea- toria– que resuelva las siguientes actividades:
+
+ 
+
+# realizar los barridos preorden, inorden, postorden y por nivel sobre el árbol generado;
+#  determinar si un número está cargado en el árbol o no;
+#  eliminar tres valores del árbol;
+#  determinar la altura del subárbol izquierdo y del subárbol derecho;
+#  determinar la cantidad de ocurrencias de un elemento en el árbol;
+
+import random
+
 class nodoCola(object):
-    """Clase nodo cola"""
-    
     info, sig = None, None
 
 class Cola(object):
-    """Clase cola"""
-
     def __init__(self):
-        """Crea una cola vacia"""
-        self.frente, self.final = None, None
-        self.tamanio = 0
+        self.frente = None
+        self.final = None
+        self.size = 0
 
     def arribo(cola, dato):
-        """Arriba el dato al final de la cola"""
         nodo = nodoCola()
         nodo.info = dato
         if cola.frente is None:
@@ -20,278 +27,189 @@ class Cola(object):
         else:
             cola.final.sig = nodo
         cola.final = nodo
-        cola.tamanio += 1
+        cola.size += 1
 
     def atencion(cola):
-        """Atiende el elemento en el frente de la cola y lo devuelve"""
         dato = cola.frente.info
         cola.frente = cola.frente.sig
         if cola.frente is None:
             cola.final = None
-        cola.tamanio -= 1
+        cola.size -= 1
         return dato
     
     def cola_vacia(cola):
-        """Devuelve true si la cola esta vacia"""
         return cola.frente is None
     
     def en_frente(cola):
-        """Devuelve el valor almacenado en el frente de la cola"""
         return cola.frente.info
     
-    def tamanio(cola):
-        """Devuelve el numero de elementos en la cola"""
-        return cola.tamanio
+    def size(cola):
+        return cola.size
     
     def mover_al_final(cola):
-        """Mueve el elemento del frente de la cola al final"""
         dato = Cola.atencion(cola)
         Cola.arribo(cola, dato)
         return dato
-
+    
     def barrido(cola):
-        """Muestra el contenido de una cola sin perder datos"""
         i = 0
-        while (i < cola.tamanio):
+        while i < Cola.size(cola):
             dato = Cola.mover_al_final(cola)
             print(dato)
             i += 1
 
-class nodoArbol(object):
-    """Clase nodo árbol"""
+    def vaciar_cola(cola):
+        for i in range(Cola.size(cola)):
+            Cola.atencion(cola)
+        return cola
+
+
+class Arbol(object):#aumentar la altura de los nodos a medida que se añade un nuevo nivel
 
     def __init__(self, info):
-        """Crea un nodo con la información cargada"""
-        self.izq = None
-        self.der = None
+        self.izd = None
+        self.dch = None
         self.info = info
-        self.altura = 0
+        self.altura_izd = 0
+        self.altura_dch = 0
 
-    def eliminar_nodo(raiz, clave):
-        """Elimina un elemento del árbol y lo devuelve si lo encuentra"""
-        x = None
-        if (raiz is not None):
-            if(clave < raiz.info):
-                raiz.izq, x = nodoArbol.eliminar_nodo(raiz.izq, clave)
-            elif(clave > raiz.info):
-                raiz.der, x = nodoArbol.eliminar_nodo(raiz.der, clave)
+    def insertar(self, dato):
+        if self.info == dato:
+            print("El dato ya existe en el árbol")
+        elif self.info > dato:
+            if self.izd is None:
+                self.izd = Arbol(dato)
             else:
-                x = raiz.info
-                if(raiz.izq is None):
-                    raiz = raiz.der
-                elif(raiz.der is None):
-                    raiz = raiz.izq
-                else:
-                    raiz.izq, aux = nodoArbol.remplazar(raiz.izq)
-                    raiz.info = aux.info
-        raiz = nodoArbol.balancear(raiz)
-        nodoArbol.actualizaraltura(raiz)
-        return raiz, x
-    
-    def insertar_nodo(raiz, dato):
-        """Inserta un dato al árbol"""
-        if(raiz is None):
-            raiz = nodoArbol(dato)
-        elif(dato < raiz.info):
-            raiz.izq = nodoArbol.insertar_nodo(raiz.izq, dato)
+                self.izd.insertar(dato)
         else:
-            raiz.der = nodoArbol.insertar_nodo(raiz.der, dato)
-        raiz = nodoArbol.balancear(raiz)
-        nodoArbol.actualizaraltura(raiz)
-        return raiz
+            if self.dch is None:
+                self.dch = Arbol(dato)
+            else:
+                self.dch.insertar(dato)
+        
+    def inorden(self):
+        if self is not None:
+            if self.izd is not None:
+                self.izd.inorden()
+            print(self.info)
+            if self.dch is not None:
+                self.dch.inorden()
 
-    def arbolvacio(raiz):
-        """Devuelve true si el árbol esta vacío"""
-        return raiz is None
+    def preorden(self):
+        if self is not None:
+            print(self.info)
+            if self.izd is not None:
+                self.izd.preorden()
+            if self.dch is not None:
+                self.dch.preorden()
 
-    def remplazar(raiz):
-        """Determina el nodo que remplazará al que se elimina"""
-        aux = None
-        if (raiz.der is None):
-            aux = raiz
-            raiz = raiz.izq
-        else:
-            raiz.der, aux = nodoArbol.remplazar(raiz.der)
-        return raiz, aux
+    def postorden(self):
+        if self is not None:
+            if self.izd is not None:
+                self.izd.postorden()
+            if self.dch is not None:
+                self.dch.postorden()
+            print(self.info)
     
-    def por_nivel(raiz):
-        """Realiaza el barrido postorden del árbol"""
-        pendientes = Cola()
-        Cola.arribo(pendientes, raiz)
-        while(not Cola.cola_vacia(pendientes)):
-            nodo = Cola.atencion(pendientes)
+    def por_nivel(self):
+        cola = Cola()
+        cola.arribo(self)
+        while not cola.cola_vacia():
+            nodo = cola.atencion()
             print(nodo.info)
-            if(nodo.izq is not None):
-                Cola.arribo(pendientes, nodo.izq)
-            if(nodo.der is not None):
-                Cola.arribo(pendientes, nodo.der)
+            if nodo.izd is not None:
+                cola.arribo(nodo.izd)
+            if nodo.dch is not None:
+                cola.arribo(nodo.dch)
 
-    def buscar(raiz, clave):
-        """Devuelve la dirección del elemento buscado"""
-        pos = None
-        if(raiz is not None):
-            if(raiz.info == clave):
-                pos = raiz
-            elif clave < raiz.info:
-                pos = nodoArbol.buscar(raiz.izq, clave)
-            else:
-                pos = nodoArbol.buscar(raiz.der, clave)
-        return pos
+    def busqueda(self, buscado):
+        if self.info == buscado:
+            return True
+        elif self.info > buscado and self.izd is not None:
+            return self.izd.busqueda(buscado)
+        elif self.info < buscado and self.dch is not None:
+            return self.dch.busqueda(buscado)
+        return False
     
-    def inorden(raiz):
-        """Realiza el barrido inorden del árbol"""
-        if(raiz is not None):
-            nodoArbol.inorden(raiz.izq)
-            print(raiz.info)
-            nodoArbol.inorden(raiz.der)
-
-    def preorden(raiz):
-        """Realiza el barrido preorden del árbol"""
-        if(raiz is not None):
-            print(raiz.info)
-            nodoArbol.preorden(raiz.izq)
-            nodoArbol.preorden(raiz.der)
-
-    def postorden(raiz):
-        """Realiza el barrido postorden del árbol"""
-        if(raiz is not None):
-            nodoArbol.postorden(raiz.der)
-            print(raiz.info)
-            nodoArbol.postorden(raiz.izq)
-
-    def altura(raiz):
-        """Devuelve la altura de un nodo"""
-        if(raiz is None):
-            return -1
-        else:
-            return raiz.altura
-        
-    def actualizaraltura(raiz):
-        """Actualiza la altura de un nodo"""
-        if(raiz is not None):
-            alt_izq = nodoArbol.altura(raiz.izq)
-            alt_der = nodoArbol.altura(raiz.der)
-            raiz.altura = (alt_izq if alt_izq > alt_der else alt_der) + 1
-
-    def rotar_simple(raiz, control):
-        """Realiza una rotación simple de nodos a la derecha o a la izquierda"""
-        if control:
-            aux = raiz.izq
-            raiz.izq = aux.der
-            aux.der = raiz
-        else:
-            aux = raiz.der
-            raiz.der = aux.izq
-            aux.izq = raiz
-        nodoArbol.actualizaraltura(raiz)
-        nodoArbol.actualizaraltura(aux)
-        raiz = aux
-        return raiz
-    
-    def rotar_doble(raiz, control):
-        """Realiza una rotación doble de nodos a la derecha o la izquierda"""
-        if control:
-            raiz.izq = nodoArbol.rotar_simple(raiz.izq, False)
-            raiz = nodoArbol.rotar_simple(raiz, True)
-        else:
-            raiz.der = nodoArbol.rotar_simple(raiz.der, True)
-            raiz = nodoArbol.rotar_simple(raiz, False)
-        return raiz
-    
-    def balancear(raiz):
-        """Determina que rotación hay que hacer para balancear el arbol"""
-        if(raiz is not None):
-            if(nodoArbol.altura(raiz.izq)-nodoArbol.altura(raiz.der) == 2):
-                if(nodoArbol.altura(raiz.izq.izq) >= nodoArbol.altura(raiz.izq.der)):
-                    raiz = nodoArbol.rotar_simple(raiz, True)
+    def eliminar_tres(self, dato1, dato2, dato3):
+        if self is not None:
+            if self.izd is not None:
+                if self.izd.info == dato1 or self.izd.info == dato2 or self.izd.info == dato3:
+                    self.izd = None
                 else:
-                    raiz = nodoArbol.rotar_doble(raiz, True)
-            elif(nodoArbol.altura(raiz.der)-nodoArbol.altura(raiz.izq) == 2):
-                if(nodoArbol.altura(raiz.der.der) >= nodoArbol.altura(raiz.der.izq)):
-                    raiz = nodoArbol.rotar_simple(raiz, False)
+                    self.izd.eliminar_tres(dato1, dato2, dato3)
+            if self.dch is not None:
+                if self.dch.info == dato1 or self.dch.info == dato2 or self.dch.info == dato3:
+                    self.dch = None
                 else:
-                    raiz = nodoArbol.rotar_doble(raiz, False)
-        return raiz
+                    self.dch.eliminar_tres(dato1, dato2, dato3)
 
-    def imprimir_arbol(raiz, nivel=0):
-        """Imprime por pantalla el arbol"""
-        if raiz is not None:
-            nodoArbol.imprimir_arbol(raiz.der, nivel + 1)
-            print('    ' * nivel + str(raiz.info))
-            nodoArbol.imprimir_arbol(raiz.izq, nivel + 1)
+    def altura_izd_dch(self):
+        if self is not None:
+            if self.izd is not None:
+                self.altura_izd = self.izd.altura_izd_dch()[0] + 1
+            if self.dch is not None:
+                self.altura_dch = self.dch.altura_izd_dch()[1] + 1
+        return self.altura_izd, self.altura_dch
 
-    def contar_ocurrencias(raiz, valor):
-        if raiz is None:
-            return 0
-        
-        conteo_izquierdo = nodoArbol.contar_ocurrencias(raiz.izq, valor)
-        conteo_derecho = nodoArbol.contar_ocurrencias(raiz.der, valor)
-        
-        if raiz.info == valor:
-            return 1 + conteo_izquierdo + conteo_derecho
+
+    def numero_ocurrencias(self, buscado):
+        if self is not None:
+            if self.info == buscado:
+                return 1
+            elif self.info > buscado and self.izd is not None:
+                return self.izd.numero_ocurrencias(buscado)
+            elif self.info < buscado and self.dch is not None:
+                return self.dch.numero_ocurrencias(buscado)
+        return 0
+    
+def contar_pares_impares(arbol):
+    pares = impares = 0
+    if arbol is not None:
+        if arbol.info % 2 == 0:
+            pares = 1
         else:
-            return conteo_izquierdo + conteo_derecho
-
-import random
-
-def cargar_numeros_aleatorios(cantidad):
-    arbol = nodoArbol(random.randint(1, 1000))
-    for _ in range(cantidad-1):
-        arbol = arbol.insertar_nodo(random.randint(1, 1000))
-    return arbol
-
-def contar_pares_impares(nodo):
-    if nodo is None:
-        return 0, 0
-    
-    pares, impares = contar_pares_impares(nodo.izq)
-    pares_r, impares_r = contar_pares_impares(nodo.der)
-    
-    pares += pares_r
-    impares += impares_r
-    
-    if nodo.info % 2 == 0:
-        pares += 1
-    else:
-        impares += 1
-    
+            impares = 1
+        pares_izq, impares_izq = contar_pares_impares(arbol.izd)
+        pares_der, impares_der = contar_pares_impares(arbol.dch)
+        pares += pares_izq + pares_der
+        impares += impares_izq + impares_der
     return pares, impares
 
+        
+    
+
 def main():
-    # Insertar números en el árbol
-    arbol = cargar_numeros_aleatorios(1000)
-
-    # Barridos
-    print("Barrido preorden:")
-    arbol.preorden()
-    print("\nBarrido inorden:")
+    #insertar mediante random.randint
+    arbol = Arbol(1750000/2)
+    for i in range(500):
+        arbol.insertar(random.randint(0, 1750000/2))
+    for i in range(500):
+        arbol.insertar(random.randint(1750000/2, 1750000))
     arbol.inorden()
-    print("\nBarrido postorden:")
+    print()
+    arbol.preorden()
+    print()
     arbol.postorden()
-    print("\nBarrido por nivel:")
+    print()
     arbol.por_nivel()
+    print()
+    print(f"¿Esta cargado el numero 50?: {arbol.busqueda(50)}")
+    print(f"¿Esta cargado el numero 100?: {arbol.busqueda(100)}")
+    print(f"¿Esta cargado el numero 1000?: {arbol.busqueda(1000)}")
 
-    # Buscar un número en el árbol
-    busqueda = random.randint(1, 1000)
-    print(f"\n¿Está el número {busqueda} en el árbol?:", "Sí" if arbol.buscar(busqueda) else "No")
+    #eliminar tres nodos
+    arbol.eliminar_tres(1, 2, 3)
+    
+    #altura de subarbol izquierdo y derecho
+    print(f"Altura subarbol izquierdo: {arbol.altura_izd_dch()[0]}\nAltura subarbol derecho: {arbol.altura_izd_dch()[1]}")
 
-    # Eliminar tres valores del árbol
-    eliminar = [10, 20, 30]
-    for num in eliminar:
-        arbol.eliminar_nodo(num)
+    #numero de ocurrencias
+    s = random.randint(0, 1750000)
+    print(f"Número de veces que aparece {s} en el árbol: {arbol.numero_ocurrencias(s)}")
 
-    # Alturas de subárboles izquierdo y derecho
-    print(f"\nAltura del subárbol izquierdo: {arbol.izq.altura}")
-    print(f"Altura del subárbol derecho: {arbol.der.altura}")
-
-    # Cantidad de ocurrencias de un elemento en el árbol
-    elemento = random.randint(1, 1000)
-    print(f"\nCantidad de ocurrencias de {elemento}: {arbol.contar_ocurrencias(elemento)}")
-
-    # Contar números pares e impares en el árbol
-    pares, impares = contar_pares_impares(arbol)
-    print(f"\nNúmeros pares en el árbol: {pares}")
-    print(f"Números impares en el árbol: {impares}")
+    #contar nodos pares e impares
+    print(f"Números pares: {contar_pares_impares(arbol)[0]}\nNúmeros impares: {contar_pares_impares(arbol)[1]}")
 
 if __name__ == "__main__":
     main()
