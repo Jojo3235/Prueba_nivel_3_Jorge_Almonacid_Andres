@@ -1,7 +1,7 @@
 AFIRMATIVO = ["si", "yes", "s", "y"]
 NEGATIVO = ["no", "not", "n"]
 
-class NodoArbol:
+class NodoArbol(object):
 
     def __init__(self, valor, izd=None, dch=None):
         self.valor = valor
@@ -9,7 +9,7 @@ class NodoArbol:
         self.dch = dch
 
 
-class Superheroe:
+class Superheroe(object):
 
     def __init__(self, nombre, fortaleza):
         self.nombre = nombre
@@ -19,7 +19,7 @@ class Superheroe:
         return self.nombre
     
 
-class Arbol:
+class Arbol(object):
 
     def __init__(self, arbol):
         self.arbol = arbol
